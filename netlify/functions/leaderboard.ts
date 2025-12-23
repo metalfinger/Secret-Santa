@@ -47,7 +47,30 @@ export const handler = async (event: {
 		});
 	}
 
-	const supabase = createClient(supabaseUrl, serviceKey);
+	// Validate early so misconfigured env vars don't surface as a Netlify 502.
+	try {
+		const u = new URL(supabaseUrl);
+		if (u.protocol !== "https:" && u.protocol !== "http:") {
+			return json(500, {
+				error: "Invalid SUPABASE_URL: must start with https:// or http://",
+			});
+		}
+	} catch {
+		return json(500, {
+			error:
+				"Invalid SUPABASE_URL: must be the Project URL like https://xxxx.supabase.co (not the dashboard URL).",
+		});
+	}
+
+	let supabase: ReturnType<typeof createClient>;
+	try {
+		supabase = createClient(supabaseUrl, serviceKey);
+	} catch (e) {
+		return json(500, {
+			error:
+				e instanceof Error ? e.message : "Failed to initialize Supabase client",
+		});
+	}
 
 	const eventId =
 		event.queryStringParameters?.eventId ||
