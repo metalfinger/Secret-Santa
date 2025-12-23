@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+# Optional, but helps keep builds consistent
+[build.environment]
+  NODE_VERSION = "20"
