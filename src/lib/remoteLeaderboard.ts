@@ -63,7 +63,4 @@ export const submitRemoteBestScore = async (args: {
 	}
 };
 
-export const isRemoteLeaderboardEnabled = () => {
-	// Keep it opt-in; if you don't set this env var, the app stays local-only.
-	return import.meta.env.VITE_REMOTE_LEADERBOARD === "1";
-};
+export const getDefaultEventId = () => DEFAULT_EVENT_ID;

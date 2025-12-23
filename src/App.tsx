@@ -1,39 +1,31 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 import { ChristmasBackground } from './components/ChristmasBackground'
+import { LeaderboardMini } from './components/LeaderboardMini'
 import { GameScreen } from './screens/GameScreen'
 import { LoginScreen } from './screens/LoginScreen'
 import { ResultsScreen, type GameResult } from './screens/ResultsScreen'
 import { participants } from './data/participants'
-import { getBestScores, setBestScore } from './lib/storage'
 import { buildAssignments } from './lib/secretSanta'
-import {
-  fetchRemoteLeaderboard,
-  isRemoteLeaderboardEnabled,
-  submitRemoteBestScore,
-} from './lib/remoteLeaderboard'
+import { fetchRemoteLeaderboard, submitRemoteBestScore } from './lib/remoteLeaderboard'
 
 type Screen = 'login' | 'game' | 'results'
 
-const SESSION_KEY = 'ss.session.participantId'
 const ASSIGNMENT_SEED = 'office-secret-santa-2025'
 const EVENT_ID = 'vmt-secret-santa-2025'
 
 function App() {
-  const [screen, setScreen] = useState<Screen>(() => {
-    const hasSession = Boolean(localStorage.getItem(SESSION_KEY))
-    return hasSession ? 'game' : 'login'
-  })
+  const [screen, setScreen] = useState<Screen>('login')
 
-  const [participantId, setParticipantId] = useState<string | null>(() =>
-    localStorage.getItem(SESSION_KEY),
-  )
+  // No localStorage: a refresh returns you to login (intentional).
+  const [participantId, setParticipantId] = useState<string | null>(null)
 
   const [lastResult, setLastResult] = useState<GameResult | null>(null)
 
   const [remoteRows, setRemoteRows] = useState<
-    Array<{ participantId: string; bestScore: number }> | null
+    Array<{ participantId: string; bestScore: number; name: string }> | null
   >(null)
+  const [remoteError, setRemoteError] = useState<string | null>(null)
 
   const assignments = useMemo(
     () => buildAssignments(participants, ASSIGNMENT_SEED),
@@ -41,17 +33,19 @@ function App() {
   )
 
   useEffect(() => {
-    if (!isRemoteLeaderboardEnabled()) return
-
     let cancelled = false
     ;(async () => {
       try {
+        setRemoteError(null)
         const rows = await fetchRemoteLeaderboard(EVENT_ID)
         if (cancelled) return
-        setRemoteRows(rows.map((r) => ({ participantId: r.participantId, bestScore: r.bestScore })))
+        setRemoteRows(
+          rows.map((r) => ({ participantId: r.participantId, bestScore: r.bestScore, name: r.name })),
+        )
       } catch {
         if (cancelled) return
         setRemoteRows(null)
+        setRemoteError('Leaderboard unavailable (check Netlify env vars).')
       }
     })()
 
@@ -60,25 +54,17 @@ function App() {
     }
   }, [lastResult, participantId])
 
-  const bestScores = getBestScores()
-
   const leaderboard = useMemo(() => {
     const remoteMap = new Map(remoteRows?.map((r) => [r.participantId, r.bestScore]) ?? [])
 
     return participants
-      .map((p) => {
-        const remote = remoteMap.get(p.id)
-        const local = bestScores[p.id]?.score ?? null
-        const best = isRemoteLeaderboardEnabled() ? remote ?? local : local
-
-        return {
-          participant: p,
-          bestScore: best ?? null,
-        }
-      })
+      .map((p) => ({
+        participant: p,
+        bestScore: remoteMap.get(p.id) ?? null,
+      }))
       .filter((row) => row.bestScore !== null)
       .sort((a, b) => (b.bestScore ?? 0) - (a.bestScore ?? 0))
-  }, [bestScores, remoteRows])
+  }, [remoteRows])
 
   const currentParticipant = participants.find((p) => p.id === participantId) ?? null
   const assignedRecipientId = participantId ? assignments[participantId] : null
@@ -111,7 +97,6 @@ function App() {
               <button
                 className="ml-2 rounded-full bg-red-500/10 px-3 py-1 text-sm text-red-100 ring-1 ring-red-200/20 transition hover:bg-red-500/15 active:bg-red-500/20"
                 onClick={() => {
-                  localStorage.removeItem(SESSION_KEY)
                   setParticipantId(null)
                   setLastResult(null)
                   setScreen('login')
@@ -133,15 +118,24 @@ function App() {
             className="flex-1"
           >
             {screen === 'login' ? (
-              <LoginScreen
-                participants={participants}
-                onLogin={(id) => {
-                  localStorage.setItem(SESSION_KEY, id)
-                  setParticipantId(id)
-                  setLastResult(null)
-                  setScreen('game')
-                }}
-              />
+              <div className="space-y-6">
+                <LoginScreen
+                  participants={participants}
+                  onLogin={(id) => {
+                    setParticipantId(id)
+                    setLastResult(null)
+                    setScreen('game')
+                  }}
+                />
+                <div>
+                  <LeaderboardMini leaderboard={leaderboard} />
+                  {remoteError ? (
+                    <div className="mx-auto mt-2 w-full max-w-xl text-center text-xs text-red-200/80">
+                      {remoteError}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             ) : null}
 
             {screen === 'game' ? (
@@ -150,30 +144,28 @@ function App() {
                 onFinished={(result) => {
                   setLastResult(result)
                   if (currentParticipant) {
-                    setBestScore(currentParticipant.id, result)
-
-                    if (isRemoteLeaderboardEnabled()) {
-                      submitRemoteBestScore({
-                        eventId: EVENT_ID,
-                        participantId: currentParticipant.id,
-                        name: currentParticipant.name,
-                        bestScore: result.score,
-                        moves: result.moves,
-                        seconds: result.seconds,
+                    submitRemoteBestScore({
+                      eventId: EVENT_ID,
+                      participantId: currentParticipant.id,
+                      name: currentParticipant.name,
+                      bestScore: result.score,
+                      moves: result.moves,
+                      seconds: result.seconds,
+                    })
+                      .then(() => fetchRemoteLeaderboard(EVENT_ID))
+                      .then((rows) => {
+                        setRemoteError(null)
+                        setRemoteRows(
+                          rows.map((r) => ({
+                            participantId: r.participantId,
+                            bestScore: r.bestScore,
+                            name: r.name,
+                          })),
+                        )
                       })
-                        .then(() => fetchRemoteLeaderboard(EVENT_ID))
-                        .then((rows) => {
-                          setRemoteRows(
-                            rows.map((r) => ({
-                              participantId: r.participantId,
-                              bestScore: r.bestScore,
-                            })),
-                          )
-                        })
-                        .catch(() => {
-                          // stay local-only if remote fails
-                        })
-                    }
+                      .catch(() => {
+                        setRemoteError('Score submit failed (check Supabase/Netlify env).')
+                      })
                   }
                   setScreen('results')
                 }}
@@ -196,7 +188,7 @@ function App() {
         </AnimatePresence>
 
         <footer className="mt-10 text-center text-xs text-white/60">
-          Scores are saved on this device (localStorage).
+          Leaderboard is stored in Supabase.
         </footer>
       </div>
     </div>
