@@ -7,7 +7,54 @@ type ScoreRow = {
 	best_score: number;
 	moves: number;
 	seconds: number;
+	meme_url?: string | null;
+	meme_tiny_url?: string | null;
 	updated_at?: string;
+};
+
+type Database = {
+	public: {
+		Tables: {
+			scores: {
+				Row: {
+					event_id: string;
+					participant_id: string;
+					name: string;
+					best_score: number;
+					moves: number;
+					seconds: number;
+					meme_url: string | null;
+					meme_tiny_url: string | null;
+					updated_at: string;
+				};
+				Insert: {
+					event_id: string;
+					participant_id: string;
+					name: string;
+					best_score: number;
+					moves: number;
+					seconds: number;
+					meme_url?: string | null;
+					meme_tiny_url?: string | null;
+					updated_at?: string;
+				};
+				Update: {
+					name?: string;
+					best_score?: number;
+					moves?: number;
+					seconds?: number;
+					meme_url?: string | null;
+					meme_tiny_url?: string | null;
+					updated_at?: string;
+				};
+				Relationships: [];
+			};
+		};
+		Views: Record<string, never>;
+		Functions: Record<string, never>;
+		Enums: Record<string, never>;
+		CompositeTypes: Record<string, never>;
+	};
 };
 
 const json = (statusCode: number, body: unknown) => ({
@@ -62,9 +109,9 @@ export const handler = async (event: {
 		});
 	}
 
-	let supabase: ReturnType<typeof createClient>;
+	let supabase: ReturnType<typeof createClient<Database>>;
 	try {
-		supabase = createClient(supabaseUrl, serviceKey);
+		supabase = createClient<Database>(supabaseUrl, serviceKey);
 	} catch (e) {
 		return json(500, {
 			error:
@@ -81,7 +128,7 @@ export const handler = async (event: {
 		const { data, error } = await supabase
 			.from("scores")
 			.select(
-				"event_id,participant_id,name,best_score,moves,seconds,updated_at"
+				"event_id,participant_id,name,best_score,moves,seconds,meme_url,meme_tiny_url,updated_at"
 			)
 			.eq("event_id", eventId)
 			.order("best_score", { ascending: false })
@@ -113,7 +160,28 @@ export const handler = async (event: {
 			return json(400, { error: "best_score, moves, seconds must be numbers" });
 		}
 
-		// Read existing best score to enforce "best only".
+		if (
+			p.meme_url !== undefined &&
+			p.meme_url !== null &&
+			typeof p.meme_url !== "string"
+		) {
+			return json(400, { error: "meme_url must be a string" });
+		}
+		if (
+			p.meme_tiny_url !== undefined &&
+			p.meme_tiny_url !== null &&
+			typeof p.meme_tiny_url !== "string"
+		) {
+			return json(400, { error: "meme_tiny_url must be a string" });
+		}
+		if (typeof p.meme_url === "string" && p.meme_url.length > 2000) {
+			return json(400, { error: "meme_url too long" });
+		}
+		if (typeof p.meme_tiny_url === "string" && p.meme_tiny_url.length > 2000) {
+			return json(400, { error: "meme_tiny_url too long" });
+		}
+
+		// Read existing best score (we keep best score, but allow updating meme anytime).
 		const { data: existing, error: readErr } = await supabase
 			.from("scores")
 			.select("best_score")
@@ -123,30 +191,70 @@ export const handler = async (event: {
 
 		if (readErr) return json(500, { error: readErr.message });
 
+		const now = new Date().toISOString();
+		const hasMemeUpdate =
+			p.meme_url !== undefined || p.meme_tiny_url !== undefined;
+
 		if (
 			existing?.best_score !== undefined &&
 			existing.best_score !== null &&
 			p.best_score <= existing.best_score
 		) {
-			return json(200, { ok: true, updated: false });
+			if (!hasMemeUpdate) {
+				return json(200, { ok: true, updatedScore: false, updatedMeme: false });
+			}
+
+			const updatePatch: Database["public"]["Tables"]["scores"]["Update"] = {
+				name: p.name,
+				updated_at: now,
+			};
+			if (p.meme_url !== undefined) updatePatch.meme_url = p.meme_url;
+			if (p.meme_tiny_url !== undefined)
+				updatePatch.meme_tiny_url = p.meme_tiny_url;
+
+			const { error: updateErr } = await supabase
+				.from("scores")
+				.update(updatePatch)
+				.eq("event_id", eventId)
+				.eq("participant_id", p.participant_id);
+
+			if (updateErr) {
+				return json(500, {
+					error: updateErr.message,
+					hint: "If you just enabled memes, ensure your Supabase scores table has columns meme_url and meme_tiny_url.",
+				});
+			}
+
+			return json(200, { ok: true, updatedScore: false, updatedMeme: true });
 		}
 
-		const row: ScoreRow = {
+		const row: Database["public"]["Tables"]["scores"]["Insert"] = {
 			event_id: eventId,
 			participant_id: p.participant_id,
 			name: p.name,
 			best_score: p.best_score,
 			moves: p.moves,
 			seconds: p.seconds,
+			meme_url: p.meme_url ?? null,
+			meme_tiny_url: p.meme_tiny_url ?? null,
+			updated_at: now,
 		};
 
 		const { error: writeErr } = await supabase
 			.from("scores")
 			.upsert(row, { onConflict: "event_id,participant_id" });
 
-		if (writeErr) return json(500, { error: writeErr.message });
+		if (writeErr)
+			return json(500, {
+				error: writeErr.message,
+				hint: "If you just enabled memes, ensure your Supabase scores table has columns meme_url and meme_tiny_url.",
+			});
 
-		return json(200, { ok: true, updated: true });
+		return json(200, {
+			ok: true,
+			updatedScore: true,
+			updatedMeme: hasMemeUpdate,
+		});
 	}
 
 	return json(405, { error: "Method not allowed" });

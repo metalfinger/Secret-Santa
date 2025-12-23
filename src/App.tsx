@@ -21,7 +21,13 @@ function App() {
   const [lastResult, setLastResult] = useState<GameResult | null>(null)
 
   const [remoteRows, setRemoteRows] = useState<
-    Array<{ participantId: string; bestScore: number; name: string }> | null
+    Array<{
+      participantId: string
+      bestScore: number
+      name: string
+      memeUrl?: string | null
+      memeTinyUrl?: string | null
+    }> | null
   >(null)
   const [remoteError, setRemoteError] = useState<string | null>(null)
 
@@ -33,7 +39,13 @@ function App() {
         const rows = await fetchRemoteLeaderboard(EVENT_ID)
         if (cancelled) return
         setRemoteRows(
-          rows.map((r) => ({ participantId: r.participantId, bestScore: r.bestScore, name: r.name })),
+          rows.map((r) => ({
+            participantId: r.participantId,
+            bestScore: r.bestScore,
+            name: r.name,
+            memeUrl: r.memeUrl ?? null,
+            memeTinyUrl: r.memeTinyUrl ?? null,
+          })),
         )
       } catch {
         if (cancelled) return
@@ -48,12 +60,14 @@ function App() {
   }, [lastResult, participantId])
 
   const leaderboard = useMemo(() => {
-    const remoteMap = new Map(remoteRows?.map((r) => [r.participantId, r.bestScore]) ?? [])
+    const remoteMap = new Map(remoteRows?.map((r) => [r.participantId, r]) ?? [])
 
     return participants
       .map((p) => ({
         participant: p,
-        bestScore: remoteMap.get(p.id) ?? null,
+        bestScore: remoteMap.get(p.id)?.bestScore ?? null,
+        memeUrl: remoteMap.get(p.id)?.memeUrl ?? null,
+        memeTinyUrl: remoteMap.get(p.id)?.memeTinyUrl ?? null,
       }))
       .filter((row) => row.bestScore !== null)
       .sort((a, b) => (b.bestScore ?? 0) - (a.bestScore ?? 0))
@@ -153,6 +167,8 @@ function App() {
                             participantId: r.participantId,
                             bestScore: r.bestScore,
                             name: r.name,
+                            memeUrl: r.memeUrl ?? null,
+                            memeTinyUrl: r.memeTinyUrl ?? null,
                           })),
                         )
                       })
@@ -171,6 +187,30 @@ function App() {
                 result={lastResult}
                 leaderboard={leaderboard}
                 assignedRecipient={assignedRecipient}
+                onChooseMeme={async (meme) => {
+                  if (!currentParticipant || !lastResult) return
+                  await submitRemoteBestScore({
+                    eventId: EVENT_ID,
+                    participantId: currentParticipant.id,
+                    name: currentParticipant.name,
+                    bestScore: lastResult.score,
+                    moves: lastResult.moves,
+                    seconds: lastResult.seconds,
+                    memeUrl: meme.url,
+                    memeTinyUrl: meme.tinyUrl ?? null,
+                  })
+                  const rows = await fetchRemoteLeaderboard(EVENT_ID)
+                  setRemoteError(null)
+                  setRemoteRows(
+                    rows.map((r) => ({
+                      participantId: r.participantId,
+                      bestScore: r.bestScore,
+                      name: r.name,
+                      memeUrl: r.memeUrl ?? null,
+                      memeTinyUrl: r.memeTinyUrl ?? null,
+                    })),
+                  )
+                }}
                 onPlayAgain={() => {
                   setLastResult(null)
                   setScreen('game')

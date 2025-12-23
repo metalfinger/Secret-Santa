@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Participant } from '../data/participants'
 import { Button } from '../components/Button'
 import { HolidayCard } from '../components/HolidayCard'
 import { useRankMemes } from '../lib/leaderboardMemes'
+import { getTenorKey, searchTenorGifs, type TenorGif } from '../lib/tenor.ts'
 
 export type GameResult = {
   score: number
@@ -16,17 +17,30 @@ export function ResultsScreen({
   result,
   leaderboard,
   assignedRecipient,
+  onChooseMeme,
   onPlayAgain,
 }: {
   participant: Participant | null
   result: GameResult | null
-  leaderboard: Array<{ participant: Participant; bestScore: number | null }>
+  leaderboard: Array<{
+    participant: Participant
+    bestScore: number | null
+    memeUrl?: string | null
+    memeTinyUrl?: string | null
+  }>
   assignedRecipient: Participant | null
+  onChooseMeme?: (meme: { url: string; tinyUrl?: string | null; alt?: string }) => Promise<void>
   onPlayAgain: () => void
 }) {
   const rankMemes = useRankMemes()
   const [revealOpen, setRevealOpen] = useState(false)
   const [confirm, setConfirm] = useState(false)
+
+  const [memeOptions, setMemeOptions] = useState<TenorGif[] | null>(null)
+  const [memeError, setMemeError] = useState<string | null>(null)
+  const [selectedMeme, setSelectedMeme] = useState<TenorGif | null>(null)
+  const [savingMeme, setSavingMeme] = useState(false)
+  const [savedMeme, setSavedMeme] = useState(false)
 
   const yourName = participant?.name ?? 'Player'
 
@@ -36,6 +50,37 @@ export function ResultsScreen({
     if (idx === -1) return null
     return idx + 1
   }, [leaderboard, participant])
+
+  const tenorKey = getTenorKey()
+  useEffect(() => {
+    let cancelled = false
+    setSavedMeme(false)
+    setSelectedMeme(null)
+
+    if (!participant || !result) return
+    if (!tenorKey) {
+      setMemeOptions(null)
+      setMemeError('Set VITE_TENOR_KEY to enable meme selection.')
+      return
+    }
+
+    setMemeError(null)
+    searchTenorGifs({ query: 'christmas meme', limit: 9 })
+      .then((opts: TenorGif[]) => {
+        if (cancelled) return
+        setMemeOptions(opts)
+        if (!opts.length) setMemeError('No memes found.')
+      })
+      .catch(() => {
+        if (cancelled) return
+        setMemeOptions(null)
+        setMemeError('Could not load meme options.')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [participant, result, tenorKey])
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -87,6 +132,71 @@ export function ResultsScreen({
             <p className="mt-4 text-xs text-white/70">
               (Note) This app is a fun office game. If someone opens DevTools they could inspect the assignment.
             </p>
+
+
+            {participant && result ? (
+              <div className="mt-6 rounded-3xl bg-white/5 p-5 ring-1 ring-white/10">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-semibold">Pick your meme</h3>
+                    <p className="mt-1 text-xs text-white/70">
+                      Choose one to attach to your leaderboard row. You can change it next time you play.
+                    </p>
+                  </div>
+                  {savingMeme ? (
+                    <div className="text-xs text-white/70">Saving…</div>
+                  ) : savedMeme ? (
+                    <div className="text-xs text-emerald-200">Saved</div>
+                  ) : null}
+                </div>
+
+                {memeError ? (
+                  <div className="mt-3 text-xs text-red-200/80">{memeError}</div>
+                ) : null}
+
+                {memeOptions?.length ? (
+                  <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {memeOptions.map((m) => {
+                      const isSelected = selectedMeme?.url === m.url
+                      return (
+                        <button
+                          key={m.url}
+                          type="button"
+                          className={
+                            'relative overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10 transition focus:outline-none ' +
+                            (isSelected ? 'ring-2 ring-emerald-200/70' : 'hover:bg-white/10')
+                          }
+                          onClick={async () => {
+                            if (!onChooseMeme) return
+                            setSelectedMeme(m)
+                            setSavedMeme(false)
+                            setSavingMeme(true)
+                            try {
+                              await onChooseMeme({ url: m.url, tinyUrl: m.tinyUrl ?? null, alt: m.alt })
+                              setSavedMeme(true)
+                            } catch {
+                              setMemeError('Could not save meme to leaderboard.')
+                              setSavedMeme(false)
+                            } finally {
+                              setSavingMeme(false)
+                            }
+                          }}
+                          disabled={savingMeme || !onChooseMeme}
+                        >
+                          <img
+                            src={m.tinyUrl ?? m.url}
+                            alt={m.alt}
+                            className="h-20 w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="w-full md:max-w-sm">
@@ -104,13 +214,22 @@ export function ResultsScreen({
                     (() => {
                       const rank = i + 1
                       const meme = rankMemes[rank] ?? null
+                      const chosen = row.memeTinyUrl || row.memeUrl
                       return (
                     <div
                       key={row.participant.id}
                       className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/10"
                     >
                       <div className="flex items-center gap-3">
-                        {meme ? (
+                        {chosen ? (
+                          <img
+                            src={chosen}
+                            alt={`${row.participant.name} meme`}
+                            className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : meme ? (
                           <img
                             src={meme.src}
                             alt={meme.alt}

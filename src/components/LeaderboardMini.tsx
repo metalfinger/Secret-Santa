@@ -4,7 +4,12 @@ import { useRankMemes } from '../lib/leaderboardMemes'
 export function LeaderboardMini({
   leaderboard,
 }: {
-  leaderboard: Array<{ participant: Participant; bestScore: number | null }>
+  leaderboard: Array<{
+    participant: Participant
+    bestScore: number | null
+    memeUrl?: string | null
+    memeTinyUrl?: string | null
+  }>
 }) {
   const rankMemes = useRankMemes()
   const top = leaderboard.slice(0, 5)
@@ -38,13 +43,22 @@ export function LeaderboardMini({
               (() => {
                 const rank = i + 1
                 const meme = rankMemes[rank] ?? null
+                const chosen = row.memeTinyUrl || row.memeUrl
                 return (
               <div
                 key={row.participant.id}
                 className="flex items-center justify-between rounded-2xl bg-white/5 px-3 py-2 ring-1 ring-white/10"
               >
                 <div className="flex items-center gap-3">
-                  {meme ? (
+                  {chosen ? (
+                    <img
+                      src={chosen}
+                      alt={`${row.participant.name} meme`}
+                      className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : meme ? (
                     <img
                       src={meme.src}
                       alt={meme.alt}

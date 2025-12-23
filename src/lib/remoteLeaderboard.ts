@@ -4,6 +4,8 @@ export type RemoteLeaderboardRow = {
 	bestScore: number;
 	moves: number;
 	seconds: number;
+	memeUrl?: string | null;
+	memeTinyUrl?: string | null;
 	updatedAt?: string;
 };
 
@@ -24,6 +26,8 @@ export const fetchRemoteLeaderboard = async (
 			best_score: number;
 			moves: number;
 			seconds: number;
+			meme_url?: string | null;
+			meme_tiny_url?: string | null;
 			updated_at?: string;
 		}>;
 	};
@@ -34,6 +38,8 @@ export const fetchRemoteLeaderboard = async (
 		bestScore: r.best_score,
 		moves: r.moves,
 		seconds: r.seconds,
+		memeUrl: r.meme_url ?? null,
+		memeTinyUrl: r.meme_tiny_url ?? null,
 		updatedAt: r.updated_at,
 	}));
 };
@@ -45,6 +51,8 @@ export const submitRemoteBestScore = async (args: {
 	bestScore: number;
 	moves: number;
 	seconds: number;
+	memeUrl?: string | null;
+	memeTinyUrl?: string | null;
 }) => {
 	const res = await fetch(endpoint(args.eventId ?? DEFAULT_EVENT_ID), {
 		method: "POST",
@@ -55,6 +63,8 @@ export const submitRemoteBestScore = async (args: {
 			best_score: args.bestScore,
 			moves: args.moves,
 			seconds: args.seconds,
+			meme_url: args.memeUrl ?? undefined,
+			meme_tiny_url: args.memeTinyUrl ?? undefined,
 		}),
 	});
 

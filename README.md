@@ -36,6 +36,9 @@ create table if not exists public.scores (
 	best_score integer not null,
 	moves integer not null,
 	seconds integer not null,
+	-- Optional: user-chosen meme shown on the leaderboard
+	meme_url text null,
+	meme_tiny_url text null,
 	updated_at timestamptz not null default now(),
 	primary key (event_id, participant_id)
 );
@@ -59,3 +62,7 @@ Set this in your local `.env` (and on Netlify if you want):
 - `VITE_REMOTE_LEADERBOARD=1`
 
 That’s it — the app will POST scores to `/.netlify/functions/leaderboard` and show the shared leaderboard.
+
+## Meme selection (optional)
+
+If you set `VITE_TENOR_KEY`, the results screen will show a picker so the player can attach a GIF meme to their leaderboard row.
