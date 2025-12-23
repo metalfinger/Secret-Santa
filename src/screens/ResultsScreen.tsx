@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import type { Participant } from '../data/participants'
 import { Button } from '../components/Button'
 import { HolidayCard } from '../components/HolidayCard'
+import { useRankMemes } from '../lib/leaderboardMemes'
 
 export type GameResult = {
   score: number
@@ -23,6 +24,7 @@ export function ResultsScreen({
   assignedRecipient: Participant | null
   onPlayAgain: () => void
 }) {
+  const rankMemes = useRankMemes()
   const [revealOpen, setRevealOpen] = useState(false)
   const [confirm, setConfirm] = useState(false)
 
@@ -99,16 +101,33 @@ export function ResultsScreen({
                   <div className="text-sm text-white/70">No scores yet.</div>
                 ) : (
                   leaderboard.slice(0, 10).map((row, i) => (
+                    (() => {
+                      const rank = i + 1
+                      const meme = rankMemes[rank] ?? null
+                      return (
                     <div
                       key={row.participant.id}
                       className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2 ring-1 ring-white/10"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-7 text-center text-sm text-white/70">{i + 1}</div>
+                        {meme ? (
+                          <img
+                            src={meme.src}
+                            alt={meme.alt}
+                            className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-xl bg-white/5 ring-1 ring-white/10" />
+                        )}
+                        <div className="w-7 text-center text-sm text-white/70">{rank}</div>
                         <div className="font-medium">{row.participant.name}</div>
                       </div>
                       <div className="font-semibold">{row.bestScore}</div>
                     </div>
+                      )
+                    })()
                   ))
                 )}
               </div>

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120" role="img" aria-label="Top 1 Victory">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#064e3b" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#7f1d1d" stop-opacity="0.85"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="6" y="6" width="308" height="108" rx="18" fill="url(#bg)" stroke="#ffffff" stroke-opacity="0.18"/>
+
+  <!-- confetti -->
+  <g opacity="0.9">
+    <circle cx="30" cy="28" r="3" fill="#fbbf24"/>
+    <circle cx="55" cy="20" r="2" fill="#34d399"/>
+    <circle cx="290" cy="30" r="3" fill="#fb7185"/>
+    <rect x="265" y="18" width="7" height="7" rx="2" fill="#60a5fa"/>
+    <rect x="40" y="78" width="7" height="7" rx="2" fill="#fb7185"/>
+    <circle cx="286" cy="86" r="2" fill="#34d399"/>
+  </g>
+
+  <!-- trophy (simple) -->
+  <g transform="translate(22 28)" filter="url(#glow)">
+    <path d="M34 8h28c0 18-6 28-20 30v6h10v8H44v-8h10v-6C40 36 34 26 34 8z" fill="#fbbf24"/>
+    <path d="M30 10h6c0 10-2 16-8 19-2 1-4 1-6 1v-6c4 0 7-2 8-14z" fill="#fcd34d"/>
+    <path d="M90 10h-6c0 10 2 16 8 19 2 1 4 1 6 1v-6c-4 0-7-2-8-14z" fill="#fcd34d" transform="translate(-22 0)"/>
+    <rect x="38" y="58" width="52" height="10" rx="5" fill="#f59e0b" opacity="0.9"/>
+  </g>
+
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" fill="#fff">
+    <text x="120" y="46" font-size="14" opacity="0.85">TOP 1</text>
+    <text x="120" y="76" font-size="26" font-weight="800">CHAMPION</text>
+  </g>
+
+  <!-- subtle sparkle animation -->
+  <g opacity="0.95">
+    <path d="M280 60l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#fbbf24">
+      <animate attributeName="opacity" values="0.2;1;0.2" dur="1.6s" repeatCount="indefinite"/>
+    </path>
+  </g>
+</svg>

@@ -35,3 +35,14 @@ export const participants: Participant[] = [
 	{ name: "Varun Raja", pin: "1019" },
 	{ name: "Divin", pin: "1020" },
 ].map((p) => ({ ...p, id: makeId(p.name) }));
+
+// Fixed Secret Santa pairing (code-only, deterministic).
+// This maps each person to the next person in the list (last -> first).
+// Change the list order above if you want to change the pairing.
+export const fixedAssignments: Record<Participant["id"], Participant["id"]> =
+	Object.fromEntries(
+		participants.map((p, i) => [
+			p.id,
+			participants[(i + 1) % participants.length]!.id,
+		])
+	) as Record<Participant["id"], Participant["id"]>;

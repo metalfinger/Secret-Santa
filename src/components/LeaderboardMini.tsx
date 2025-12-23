@@ -1,10 +1,12 @@
 import type { Participant } from '../data/participants'
+import { useRankMemes } from '../lib/leaderboardMemes'
 
 export function LeaderboardMini({
   leaderboard,
 }: {
   leaderboard: Array<{ participant: Participant; bestScore: number | null }>
 }) {
+  const rankMemes = useRankMemes()
   const top = leaderboard.slice(0, 5)
   const leader = top[0]
 
@@ -33,16 +35,33 @@ export function LeaderboardMini({
         {top.length ? (
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {top.map((row, i) => (
+              (() => {
+                const rank = i + 1
+                const meme = rankMemes[rank] ?? null
+                return (
               <div
                 key={row.participant.id}
                 className="flex items-center justify-between rounded-2xl bg-white/5 px-3 py-2 ring-1 ring-white/10"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 text-center text-xs text-white/55">{i + 1}</div>
+                  {meme ? (
+                    <img
+                      src={meme.src}
+                      alt={meme.alt}
+                      className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-xl bg-white/5 ring-1 ring-white/10" />
+                  )}
+                  <div className="w-5 text-center text-xs text-white/55">{rank}</div>
                   <div className="text-sm font-medium text-white/90">{row.participant.name}</div>
                 </div>
                 <div className="text-sm font-semibold text-white">{row.bestScore}</div>
               </div>
+                )
+              })()
             ))}
           </div>
         ) : (

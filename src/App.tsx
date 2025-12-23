@@ -5,13 +5,11 @@ import { LeaderboardMini } from './components/LeaderboardMini'
 import { GameScreen } from './screens/GameScreen'
 import { LoginScreen } from './screens/LoginScreen'
 import { ResultsScreen, type GameResult } from './screens/ResultsScreen'
-import { participants } from './data/participants'
-import { buildAssignments } from './lib/secretSanta'
+import { fixedAssignments, participants } from './data/participants'
 import { fetchRemoteLeaderboard, submitRemoteBestScore } from './lib/remoteLeaderboard'
 
 type Screen = 'login' | 'game' | 'results'
 
-const ASSIGNMENT_SEED = 'office-secret-santa-2025'
 const EVENT_ID = 'vmt-secret-santa-2025'
 
 function App() {
@@ -26,11 +24,6 @@ function App() {
     Array<{ participantId: string; bestScore: number; name: string }> | null
   >(null)
   const [remoteError, setRemoteError] = useState<string | null>(null)
-
-  const assignments = useMemo(
-    () => buildAssignments(participants, ASSIGNMENT_SEED),
-    [],
-  )
 
   useEffect(() => {
     let cancelled = false
@@ -67,7 +60,7 @@ function App() {
   }, [remoteRows])
 
   const currentParticipant = participants.find((p) => p.id === participantId) ?? null
-  const assignedRecipientId = participantId ? assignments[participantId] : null
+  const assignedRecipientId = participantId ? fixedAssignments[participantId] : null
   const assignedRecipient = participants.find((p) => p.id === assignedRecipientId) ?? null
 
   return (
@@ -188,7 +181,7 @@ function App() {
         </AnimatePresence>
 
         <footer className="mt-10 text-center text-xs text-white/60">
-          Leaderboard is stored in Supabase.
+          
         </footer>
       </div>
     </div>
