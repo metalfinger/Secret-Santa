@@ -155,7 +155,7 @@ export function ResultsScreen({
                 ) : null}
 
                 {memeOptions?.length ? (
-                  <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                     {memeOptions.map((m) => {
                       const isSelected = selectedMeme?.url === m.url
                       return (
@@ -186,7 +186,7 @@ export function ResultsScreen({
                           <img
                             src={m.tinyUrl ?? m.url}
                             alt={m.alt}
-                            className="h-20 w-full object-cover"
+                            className="h-28 w-full object-cover sm:h-32"
                             loading="lazy"
                             decoding="async"
                           />
@@ -225,7 +225,7 @@ export function ResultsScreen({
                           <img
                             src={chosen}
                             alt={`${row.participant.name} meme`}
-                            className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                            className="h-14 w-14 rounded-2xl ring-1 ring-white/10"
                             loading="lazy"
                             decoding="async"
                           />
@@ -233,12 +233,12 @@ export function ResultsScreen({
                           <img
                             src={meme.src}
                             alt={meme.alt}
-                            className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                            className="h-14 w-14 rounded-2xl ring-1 ring-white/10"
                             loading="lazy"
                             decoding="async"
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-xl bg-white/5 ring-1 ring-white/10" />
+                          <div className="h-14 w-14 rounded-2xl bg-white/5 ring-1 ring-white/10" />
                         )}
                         <div className="w-7 text-center text-sm text-white/70">{rank}</div>
                         <div className="font-medium">{row.participant.name}</div>

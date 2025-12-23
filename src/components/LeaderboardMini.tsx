@@ -54,7 +54,7 @@ export function LeaderboardMini({
                     <img
                       src={chosen}
                       alt={`${row.participant.name} meme`}
-                      className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                      className="h-12 w-12 rounded-2xl ring-1 ring-white/10"
                       loading="lazy"
                       decoding="async"
                     />
@@ -62,12 +62,12 @@ export function LeaderboardMini({
                     <img
                       src={meme.src}
                       alt={meme.alt}
-                      className="h-10 w-10 rounded-xl ring-1 ring-white/10"
+                      className="h-12 w-12 rounded-2xl ring-1 ring-white/10"
                       loading="lazy"
                       decoding="async"
                     />
                   ) : (
-                    <div className="h-10 w-10 rounded-xl bg-white/5 ring-1 ring-white/10" />
+                    <div className="h-12 w-12 rounded-2xl bg-white/5 ring-1 ring-white/10" />
                   )}
                   <div className="w-5 text-center text-xs text-white/55">{rank}</div>
                   <div className="text-sm font-medium text-white/90">{row.participant.name}</div>
