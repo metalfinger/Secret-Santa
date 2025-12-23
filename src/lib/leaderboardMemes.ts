@@ -25,16 +25,13 @@ const getTenorKey = () => {
 const fetchTenorFeatured = async (): Promise<RankMemes> => {
 	const key = getTenorKey();
 	if (!key) {
-		return {
-			1: fallbackForRank(1)!,
-			2: fallbackForRank(2)!,
-		};
+		return { 1: fallbackForRank(1)!, 2: fallbackForRank(2)! };
 	}
 
 	const url = new URL("https://tenor.googleapis.com/v2/featured");
 	url.searchParams.set("key", key);
 	url.searchParams.set("client_key", "vmt-secret-santa");
-	url.searchParams.set("limit", "12");
+	url.searchParams.set("limit", "30");
 	url.searchParams.set("contentfilter", "high");
 	url.searchParams.set("media_filter", "tinygif,gif");
 
@@ -61,19 +58,19 @@ const fetchTenorFeatured = async (): Promise<RankMemes> => {
 		})
 		.filter(Boolean) as LeaderboardMeme[];
 
-	return {
-		1: picks[0] ?? fallbackForRank(1)!,
-		2: picks[1] ?? fallbackForRank(2)!,
-	};
+	const out: RankMemes = {};
+	for (let rank = 1; rank <= 10; rank++) {
+		const picked = picks[rank - 1] ?? null;
+		const fallback = fallbackForRank(rank);
+		const meme = picked ?? fallback;
+		if (meme) out[rank] = meme;
+	}
+	return out;
 };
 
 export const useRankMemes = (): RankMemes => {
 	const [memes, setMemes] = useState<RankMemes>(
-		() =>
-			cachedRankMemes ?? {
-				1: fallbackForRank(1)!,
-				2: fallbackForRank(2)!,
-			}
+		() => cachedRankMemes ?? { 1: fallbackForRank(1)!, 2: fallbackForRank(2)! }
 	);
 
 	useEffect(() => {

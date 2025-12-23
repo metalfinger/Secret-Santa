@@ -86,12 +86,10 @@ function App() {
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium tracking-wide ring-1 ring-emerald-200/20 backdrop-blur">
             <span className="text-emerald-100">VMT</span>
             <span className="text-white/60">•</span>
-            <span className="text-white/85">Secret Santa</span>
-            <span className="text-white/60">•</span>
             <span className="text-red-100">2025</span>
           </div>
 
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">VMT Secret Santa</h1>
+          <h1 className="font-festive text-5xl font-bold tracking-tight sm:text-6xl">Secret Santa</h1>
 
           <p className="max-w-2xl text-white/75">
             Play the game, get your score, then reveal your Secret Santa.

@@ -95,9 +95,6 @@ export function LoginScreen({
             Start
           </Button>
 
-          <p className="text-xs text-white/70">
-            PINs are currently set to 1001–1020 as placeholders.
-          </p>
         </form>
       </HolidayCard>
     </div>

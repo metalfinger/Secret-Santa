@@ -65,7 +65,7 @@ export function ResultsScreen({
     }
 
     setMemeError(null)
-    searchTenorGifs({ query: 'christmas meme', limit: 9 })
+    searchTenorGifs({ query: 'christmas meme', limit: 24 })
       .then((opts: TenorGif[]) => {
         if (cancelled) return
         setMemeOptions(opts)
@@ -155,7 +155,8 @@ export function ResultsScreen({
                 ) : null}
 
                 {memeOptions?.length ? (
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                  <div className="mt-4 max-h-80 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                     {memeOptions.map((m) => {
                       const isSelected = selectedMeme?.url === m.url
                       return (
@@ -193,6 +194,7 @@ export function ResultsScreen({
                         </button>
                       )
                     })}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -220,7 +222,7 @@ export function ResultsScreen({
                       key={row.participant.id}
                       className="flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/10"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div className="h-20 w-20 overflow-hidden rounded-2xl bg-white/5 p-1 ring-1 ring-white/10">
                           {chosen ? (
                             <img
@@ -238,11 +240,15 @@ export function ResultsScreen({
                               loading="lazy"
                               decoding="async"
                             />
-                          ) : null}
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-3xl text-white/40">
+                              🎭
+                            </div>
+                          )}
                         </div>
 
                         <div className="w-8 text-center text-sm text-white/70">{rank}</div>
-                        <div className="font-medium">{row.participant.name}</div>
+                        <div className="min-w-0 font-medium truncate">{row.participant.name}</div>
                       </div>
                       <div className="font-semibold">{row.bestScore}</div>
                     </div>

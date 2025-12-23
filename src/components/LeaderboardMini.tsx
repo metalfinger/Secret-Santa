@@ -38,7 +38,7 @@ export function LeaderboardMini({
         </div>
 
         {top.length ? (
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-1 gap-3">
             {top.map((row, i) => (
               (() => {
                 const rank = i + 1
@@ -47,10 +47,10 @@ export function LeaderboardMini({
                 return (
               <div
                 key={row.participant.id}
-                className="flex items-center justify-between rounded-2xl bg-white/5 px-3 py-2 ring-1 ring-white/10"
+                className="flex items-center justify-between rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10"
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white/5 p-1 ring-1 ring-white/10">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="h-20 w-20 overflow-hidden rounded-2xl bg-white/5 p-1 ring-1 ring-white/10">
                     {chosen ? (
                       <img
                         src={chosen}
@@ -67,12 +67,16 @@ export function LeaderboardMini({
                         loading="lazy"
                         decoding="async"
                       />
-                    ) : null}
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-3xl text-white/40">
+                        🎭
+                      </div>
+                    )}
                   </div>
-                  <div className="w-5 text-center text-xs text-white/55">{rank}</div>
-                  <div className="text-sm font-medium text-white/90">{row.participant.name}</div>
+                  <div className="w-6 text-center text-sm text-white/60">{rank}</div>
+                  <div className="min-w-0 text-base font-semibold text-white/90 truncate">{row.participant.name}</div>
                 </div>
-                <div className="text-sm font-semibold text-white">{row.bestScore}</div>
+                <div className="text-base font-semibold text-white">{row.bestScore}</div>
               </div>
                 )
               })()
