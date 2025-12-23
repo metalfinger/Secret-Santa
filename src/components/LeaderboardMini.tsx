@@ -50,25 +50,25 @@ export function LeaderboardMini({
                 className="flex items-center justify-between rounded-2xl bg-white/5 px-3 py-2 ring-1 ring-white/10"
               >
                 <div className="flex items-center gap-3">
-                  {chosen ? (
-                    <img
-                      src={chosen}
-                      alt={`${row.participant.name} meme`}
-                      className="h-12 w-12 rounded-2xl ring-1 ring-white/10"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : meme ? (
-                    <img
-                      src={meme.src}
-                      alt={meme.alt}
-                      className="h-12 w-12 rounded-2xl ring-1 ring-white/10"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <div className="h-12 w-12 rounded-2xl bg-white/5 ring-1 ring-white/10" />
-                  )}
+                  <div className="h-14 w-14 overflow-hidden rounded-2xl bg-white/5 p-1 ring-1 ring-white/10">
+                    {chosen ? (
+                      <img
+                        src={chosen}
+                        alt={`${row.participant.name} meme`}
+                        className="h-full w-full object-contain"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : meme ? (
+                      <img
+                        src={meme.src}
+                        alt={meme.alt}
+                        className="h-full w-full object-contain"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : null}
+                  </div>
                   <div className="w-5 text-center text-xs text-white/55">{rank}</div>
                   <div className="text-sm font-medium text-white/90">{row.participant.name}</div>
                 </div>
