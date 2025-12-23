@@ -48,6 +48,7 @@ export function ResultsScreen({
     if (!participant) return null
     const idx = leaderboard.findIndex((r) => r.participant.id === participant.id)
     if (idx === -1) return null
+    if (leaderboard[idx]?.bestScore === null) return null
     return idx + 1
   }, [leaderboard, participant])
 
@@ -209,52 +210,53 @@ export function ResultsScreen({
               </div>
 
               <div className="mt-3 space-y-2">
-                {leaderboard.length === 0 ? (
+                {leaderboard.every((r) => r.bestScore === null) ? (
                   <div className="text-sm text-white/70">No scores yet.</div>
                 ) : (
-                  leaderboard.slice(0, 10).map((row, i) => (
-                    (() => {
+                  <div className="max-h-[28rem] space-y-2 overflow-y-auto pr-1">
+                    {leaderboard.map((row, i) => {
                       const rank = i + 1
                       const meme = rankMemes[rank] ?? null
                       const chosen = row.memeTinyUrl || row.memeUrl
-                      return (
-                    <div
-                      key={row.participant.id}
-                      className="flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/10"
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="h-20 w-20 overflow-hidden rounded-2xl bg-white/5 p-1 ring-1 ring-white/10">
-                          {chosen ? (
-                            <img
-                              src={chosen}
-                              alt={`${row.participant.name} meme`}
-                              className="h-full w-full object-contain"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : meme ? (
-                            <img
-                              src={meme.src}
-                              alt={meme.alt}
-                              className="h-full w-full object-contain"
-                              loading="lazy"
-                              decoding="async"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-3xl text-white/40">
-                              🎭
-                            </div>
-                          )}
-                        </div>
 
-                        <div className="w-8 text-center text-sm text-white/70">{rank}</div>
-                        <div className="min-w-0 font-medium truncate">{row.participant.name}</div>
-                      </div>
-                      <div className="font-semibold">{row.bestScore}</div>
-                    </div>
+                      return (
+                        <div
+                          key={row.participant.id}
+                          className="flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/10"
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className="h-20 w-20 overflow-hidden rounded-2xl bg-white/5 p-1 ring-1 ring-white/10">
+                              {chosen ? (
+                                <img
+                                  src={chosen}
+                                  alt={`${row.participant.name} meme`}
+                                  className="h-full w-full object-contain"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              ) : meme ? (
+                                <img
+                                  src={meme.src}
+                                  alt={meme.alt}
+                                  className="h-full w-full object-contain"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-3xl text-white/40">
+                                  🎭
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="w-8 text-center text-sm text-white/70">{rank}</div>
+                            <div className="min-w-0 font-medium truncate">{row.participant.name}</div>
+                          </div>
+                          <div className="font-semibold">{row.bestScore === null ? '—' : row.bestScore}</div>
+                        </div>
                       )
-                    })()
-                  ))
+                    })}
+                  </div>
                 )}
               </div>
             </div>

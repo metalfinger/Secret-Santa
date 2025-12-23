@@ -12,8 +12,7 @@ export function LeaderboardMini({
   }>
 }) {
   const rankMemes = useRankMemes()
-  const top = leaderboard.slice(0, 5)
-  const leader = top[0]
+  const leader = leaderboard[0]
 
   return (
     <div className="mx-auto w-full max-w-xl">
@@ -22,7 +21,7 @@ export function LeaderboardMini({
           <div>
             <div className="text-xs font-medium tracking-wide text-white/60">Leaderboard</div>
             <div className="mt-1 text-base font-semibold">
-              {leader?.participant?.name ? (
+              {leader?.participant?.name && leader.bestScore !== null ? (
                 <>
                   Leading: <span className="text-emerald-200">{leader.participant.name}</span>
                   <span className="text-white/60"> — </span>
@@ -34,12 +33,13 @@ export function LeaderboardMini({
             </div>
           </div>
 
-          <div className="text-xs text-white/60">Top 5</div>
+          <div className="text-xs text-white/60">All players</div>
         </div>
 
-        {top.length ? (
-          <div className="mt-3 grid grid-cols-1 gap-3">
-            {top.map((row, i) => (
+        {leaderboard.length ? (
+          <div className="mt-3 max-h-[28rem] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 gap-3">
+            {leaderboard.map((row, i) => (
               (() => {
                 const rank = i + 1
                 const meme = rankMemes[rank] ?? null
@@ -76,11 +76,14 @@ export function LeaderboardMini({
                   <div className="w-6 text-center text-sm text-white/60">{rank}</div>
                   <div className="min-w-0 text-base font-semibold text-white/90 truncate">{row.participant.name}</div>
                 </div>
-                <div className="text-base font-semibold text-white">{row.bestScore}</div>
+                <div className="text-base font-semibold text-white">
+                  {row.bestScore === null ? '—' : row.bestScore}
+                </div>
               </div>
                 )
               })()
             ))}
+            </div>
           </div>
         ) : (
           <div className="mt-3 text-sm text-white/60">

@@ -69,8 +69,14 @@ function App() {
         memeUrl: remoteMap.get(p.id)?.memeUrl ?? null,
         memeTinyUrl: remoteMap.get(p.id)?.memeTinyUrl ?? null,
       }))
-      .filter((row) => row.bestScore !== null)
-      .sort((a, b) => (b.bestScore ?? 0) - (a.bestScore ?? 0))
+      .sort((a, b) => {
+        const as = a.bestScore
+        const bs = b.bestScore
+        if (as === null && bs === null) return a.participant.name.localeCompare(b.participant.name)
+        if (as === null) return 1
+        if (bs === null) return -1
+        return bs - as
+      })
   }, [remoteRows])
 
   const currentParticipant = participants.find((p) => p.id === participantId) ?? null

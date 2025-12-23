@@ -133,7 +133,7 @@ export const handler = async (event: {
 			.eq("event_id", eventId)
 			.order("best_score", { ascending: false })
 			.order("updated_at", { ascending: true })
-			.limit(50);
+			.limit(500);
 
 		if (error) return json(500, { error: error.message });
 		return json(200, { eventId, leaderboard: data ?? [] });
