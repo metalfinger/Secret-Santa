@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="VMT Secret Santa">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#ef4444"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="#020617"/>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#g)" opacity="0.14"/>
+
+  <!-- gift box -->
+  <rect x="18" y="28" width="28" height="24" rx="6" fill="#ffffff" opacity="0.92"/>
+  <rect x="30" y="28" width="4" height="24" rx="2" fill="#ef4444" opacity="0.95"/>
+  <rect x="18" y="36" width="28" height="4" rx="2" fill="#ef4444" opacity="0.95"/>
+
+  <!-- bow -->
+  <path d="M32 28c-1.6 0-3-1.4-3-3 0-2.3 1.4-4.2 3-4.2s3 1.9 3 4.2c0 1.6-1.4 3-3 3z" fill="#ffffff" opacity="0.9"/>
+  <path d="M29 24c-5.5-2.3-9.3.8-9.3 4.3 0 2.5 2.2 4.2 5 3.3 2.2-.7 3.8-3.1 4.3-7.6z" fill="#10b981"/>
+  <path d="M35 24c.5 4.5 2.1 6.9 4.3 7.6 2.8.9 5-0.8 5-3.3 0-3.5-3.8-6.6-9.3-4.3z" fill="#10b981"/>
+</svg>

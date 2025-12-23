@@ -35,6 +35,7 @@ export const participants: Participant[] = [
 	{ name: "Varun Raja", pin: "9437" },
 	{ name: "Divin", pin: "5173" },
 	{ name: "Sagar", pin: "0000" },
+	{ name: "Shreyansh", pin: "0000" },
 ].map((p) => ({ ...p, id: makeId(p.name) }));
 
 // Fixed Secret Santa pairing (code-only, deterministic).
@@ -66,7 +67,8 @@ const fixedAssignmentsByName: Record<Participant["name"], Participant["name"]> =
 		Kishan: "Varun Raja",
 		"Varun Raja": "Divin",
 		Divin: "Atharva",
-		Sagar: "Sagar",
+		Sagar: "Shreyansh",
+		Shreyansh: "Sagar",
 	};
 
 const buildFixedAssignments = (): Record<
